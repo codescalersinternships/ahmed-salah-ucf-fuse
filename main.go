@@ -9,6 +9,17 @@ import (
 	"bazil.org/fuse/fs"
 )
 
+type Struct struct {
+    String string
+    Int int
+    Bool bool
+    Sub SubStruct
+}
+
+type SubStruct struct {
+    Float float64
+}
+
 var usage = func() {
 	log.Printf("Usage of %s:\n", os.Args[0])
 	log.Printf("  %s MOUNTPOINT\n", os.Args[0])
@@ -30,8 +41,19 @@ func main() {
 		log.Fatal(err)
 	}
 	server := fs.New(conn, nil)
-	fs := newFS()
+
+	data := &Struct{
+        String: "name",
+        Int:    88,
+        Bool:   true,
+        Sub:    SubStruct{
+            Float: 3.14,
+        },
+    }
 	
+	fs := newFS(data)
+	fs.reflectDataIntoFS()
+
 	if err := server.Serve(fs); err != nil {
 		log.Fatal(err)
 	}
