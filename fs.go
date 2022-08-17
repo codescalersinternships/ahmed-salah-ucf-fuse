@@ -1,11 +1,17 @@
 package main
 
-import "bazil.org/fuse/fs"
+import (
+	"fmt"
+	"reflect"
+
+	"bazil.org/fuse/fs"
+	"github.com/fatih/structs"
+)
 
 type FS struct {
 	inode uint64
 	root *Dir
-	data *Struct
+	data map[string]any
 }
 
 type Node struct {
@@ -13,9 +19,12 @@ type Node struct {
 	name  string
 }
 
-func newFS(data *Struct) *FS {
+// newFS creates new FS object
+func newFS(data MyData) *FS {
+	dataMap := structs.Map(data)
+
 	return &FS{
-		data:  data,
+		data:  dataMap,
 		inode: 0,
 		root: &Dir{
 			Node: 		 Node{name: "root", inode: 1},
@@ -25,15 +34,27 @@ func newFS(data *Struct) *FS {
 	}
 }
 
-func (f *FS) nextInode() uint64 {
-	return (f.inode + 1)
+// nextInode determines the next Inode number that can be
+// assigned to the next new node in the file system
+func (fs *FS) nextInode() uint64 {
+	return (fs.inode + 1)
 }
 
 // Root is called to obtain the Node for the file system root.
-func (f *FS) Root() (fs.Node, error) {
-	return f.root, nil
+func (fs *FS) Root() (fs.Node, error) {
+	return fs.root, nil
 }
 
-func (f *FS) reflectDataIntoFS() {
-
+// reflectDataIntoFS reflects data given as argument into file system
+func (fs *FS) reflectDataIntoFS(data any, currentDir *Dir) {
+	for key, val := range data.(map[string]any) {
+		if reflect.TypeOf(val).Kind() == reflect.Map {
+			newDir := fs.newDir(key)
+			*(currentDir.directories) = append(*(currentDir.directories), newDir)
+			fs.reflectDataIntoFS(val, newDir)
+		} else {
+			newFile := fs.newFile(key, []byte(fmt.Sprint(reflect.ValueOf(val))))
+			*(currentDir.files) = append(*(currentDir.files), newFile)
+		}
+	}
 }

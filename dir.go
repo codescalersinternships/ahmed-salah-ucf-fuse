@@ -14,6 +14,15 @@ type Dir struct {
 	directories *[]*Dir
 }
 
+// newDir creates a new Dir object
+func (fs *FS) newDir(dirName string) *Dir {
+	return &Dir{
+		Node:		 Node{ inode: fs.nextInode(), name: dirName},
+		files: 		 &[]*File{ },
+		directories: &[]*Dir{ },
+	}
+}
+
 // Attr provides the core information for a directory
 func (d *Dir) Attr(ctx context.Context, a *fuse.Attr) error {
 	log.Println("Requested Attr for Directory", d.name)

@@ -9,15 +9,15 @@ import (
 	"bazil.org/fuse/fs"
 )
 
-type Struct struct {
-    String string
-    Int int
-    Bool bool
-    Sub SubStruct
+type MyData struct {
+    Name string
+	Age int
+	Sub SubStruct
 }
 
 type SubStruct struct {
-    Float float64
+    SomeValue float64
+    SomeOtherValue string
 }
 
 var usage = func() {
@@ -42,17 +42,17 @@ func main() {
 	}
 	server := fs.New(conn, nil)
 
-	data := &Struct{
-        String: "name",
-        Int:    88,
-        Bool:   true,
-        Sub:    SubStruct{
-            Float: 3.14,
-        },
+	data := MyData{
+        Name: "Salah",
+		Age: 22,
+		Sub: SubStruct{
+			SomeValue: 3.14,
+			SomeOtherValue: "some text...\n",
+		},
     }
-	
+
 	fs := newFS(data)
-	fs.reflectDataIntoFS()
+	fs.reflectDataIntoFS(fs.data, fs.root)
 
 	if err := server.Serve(fs); err != nil {
 		log.Fatal(err)
