@@ -21,11 +21,16 @@ type SubStruct struct {
     SomeOtherValue string
 }
 
-var usage = func() {
-	log.Printf("Usage of %s:\n", os.Args[0])
-	log.Printf("  %s MOUNTPOINT\n", os.Args[0])
-	flag.PrintDefaults()
+var data = &MyData{
+	Name: "Salah",
+	Age:  22,
+	Sub: SubStruct{
+		SomeValue: 		3.14,
+		SomeOtherValue: "some text...\n",
+	},
 }
+
+var fileSystem = newFS(data)
 
 func main() {
 	flag.Usage = usage
@@ -42,20 +47,16 @@ func main() {
 	}
 	server := fs.New(conn, nil)
 
-	data := &MyData{
-        Name: "Salah",
-		Age:  22,
-		Sub: SubStruct{
-			SomeValue: 		3.14,
-			SomeOtherValue: "some text...\n",
-		},
-    }
-
-	fs := newFS(data)
 	dataMap := structs.Map(data)
-	fs.reflectDataIntoFS(dataMap, fs.root)
+	fileSystem.reflectDataIntoFS(dataMap, fileSystem.root)
 
-	if err := server.Serve(fs); err != nil {
+	if err := server.Serve(fileSystem); err != nil {
 		log.Fatal(err)
 	}
+}
+
+var usage = func() {
+	log.Printf("Usage of %s:\n", os.Args[0])
+	log.Printf("  %s MOUNTPOINT\n", os.Args[0])
+	flag.PrintDefaults()
 }

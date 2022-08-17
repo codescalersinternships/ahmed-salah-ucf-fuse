@@ -5,13 +5,11 @@ import (
 	"reflect"
 
 	"bazil.org/fuse/fs"
-	// "github.com/fatih/structs"
 )
 
 type FS struct {
 	inode uint64
 	root  *Dir
-	data  *MyData
 }
 
 type Node struct {
@@ -20,9 +18,8 @@ type Node struct {
 }
 
 // newFS creates new FS object
-func newFS(data *MyData) *FS {
+func newFS(data any) *FS {
 	return &FS{
-		data:  data,
 		inode: 0,
 		root: &Dir{
 			Node: 		 Node{name: "root", inode: 1},
@@ -53,6 +50,21 @@ func (fs *FS) reflectDataIntoFS(data any, currentDir *Dir) {
 		} else {
 			newFile := fs.newFile(key, []byte(fmt.Sprint(reflect.ValueOf(val))))
 			*(currentDir.files) = append(*(currentDir.files), newFile)
+		}
+	}
+}
+
+// updateFS updates content of FUSE files from provided data
+func updateFS(data map[string]any, currentDir *Dir) {
+	if currentDir.files != nil {
+		for _, fileNode := range *currentDir.files {
+			fileNode.data = []byte(fmt.Sprint(reflect.ValueOf(data[fileNode.name])))
+		}
+	}
+
+	if currentDir.directories != nil {
+		for _, dirNode := range *currentDir.directories {
+			updateFS(data[dirNode.name].(map[string]any), dirNode)
 		}
 	}
 }
