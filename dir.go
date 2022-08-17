@@ -29,7 +29,7 @@ func (fs *FS) newDir(dirName string) *Dir {
 func (d *Dir) Attr(ctx context.Context, a *fuse.Attr) error {
 	log.Println("Requested Attr for Directory", d.name)
 	a.Inode = d.inode
-	a.Mode = os.ModeDir | 0444
+	a.Mode  = os.ModeDir | 0444
 	a.Atime = time.Now()
 	a.Mtime = time.Now()
 	a.Ctime = time.Now()

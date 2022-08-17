@@ -28,8 +28,8 @@ func (fs *FS) newFile(fileName string, fileData []byte) *File {
 func (f *File) Attr(ctx context.Context, a *fuse.Attr) error {
 	log.Printf("%s", fmt.Sprintf("Requested Attr for File %s has data size %d", f.name, len(f.data)))
 	a.Inode = f.inode
-	a.Mode = 0444
-	a.Size = uint64(len(f.data))
+	a.Mode  = 0444
+	a.Size  = uint64(len(f.data))
 	a.Atime = time.Now()
 	a.Mtime = time.Now()
 	a.Ctime = time.Now()

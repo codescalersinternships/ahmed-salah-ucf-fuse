@@ -11,12 +11,12 @@ import (
 
 type MyData struct {
     Name string
-	Age int
-	Sub SubStruct
+	Age  int
+	Sub  SubStruct
 }
 
 type SubStruct struct {
-    SomeValue float64
+    SomeValue 	   float64
     SomeOtherValue string
 }
 
@@ -26,7 +26,6 @@ var usage = func() {
 	flag.PrintDefaults()
 }
 
-// func (f *FS) 
 func main() {
 	flag.Usage = usage
 	flag.Parse()
@@ -44,9 +43,9 @@ func main() {
 
 	data := MyData{
         Name: "Salah",
-		Age: 22,
+		Age:  22,
 		Sub: SubStruct{
-			SomeValue: 3.14,
+			SomeValue: 		3.14,
 			SomeOtherValue: "some text...\n",
 		},
     }

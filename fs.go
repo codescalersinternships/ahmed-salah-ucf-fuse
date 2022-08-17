@@ -10,8 +10,8 @@ import (
 
 type FS struct {
 	inode uint64
-	root *Dir
-	data map[string]any
+	root  *Dir
+	data  map[string]any
 }
 
 type Node struct {
