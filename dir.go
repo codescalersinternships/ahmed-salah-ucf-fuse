@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"bazil.org/fuse"
 	"bazil.org/fuse/fs"
@@ -28,13 +30,16 @@ func (d *Dir) Attr(ctx context.Context, a *fuse.Attr) error {
 	log.Println("Requested Attr for Directory", d.name)
 	a.Inode = d.inode
 	a.Mode = os.ModeDir | 0444
+	a.Atime = time.Now()
+	a.Mtime = time.Now()
+	a.Ctime = time.Now()
 	return nil
 }
 
 // Lookup provides the Node that matches that name, otherwise, return fuse.ENOENT.
 // It could be either a File or a sub-Dir
 func (d *Dir) Lookup(ctx context.Context, name string) (fs.Node, error) {
-	log.Println("Requested lookup for ", name)
+	log.Printf("%s", fmt.Sprintf("Requested lookup for %s in %s\n", name, d.name))
 	if d.files != nil {
 		for _, node := range *d.files {
 			if node.name == name {
@@ -57,7 +62,7 @@ func (d *Dir) Lookup(ctx context.Context, name string) (fs.Node, error) {
 // ReadDirAll returns a slice of fuse.Dirent
 // for all Files and Dirs in the provided Dir
 func (d *Dir) ReadDirAll(ctx context.Context) ([]fuse.Dirent, error) {
-	log.Println("Reading all dirs")
+	log.Printf("%s", fmt.Sprintf("Reading all dirs of %s\n", d.name))
 	var children []fuse.Dirent
 	if d.files != nil {
 		for _, file := range *d.files {
@@ -68,7 +73,7 @@ func (d *Dir) ReadDirAll(ctx context.Context) ([]fuse.Dirent, error) {
 		for _, dir := range *d.directories {
 			children = append(children, fuse.Dirent{Inode: dir.inode, Type: fuse.DT_Dir, Name: dir.name})
 		}
-		log.Println(len(children), " children for dir", d.name)
+		log.Printf("%s", fmt.Sprintf("%d children for dir %s", len(children), d.name))
 	}
 	return children, nil
 }

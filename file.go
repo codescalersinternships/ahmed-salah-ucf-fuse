@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"time"
 
 	"bazil.org/fuse"
 	"bazil.org/fuse/fuseutil"
@@ -24,10 +26,13 @@ func (fs *FS) newFile(fileName string, fileData []byte) *File {
 
 // Attr provides the core information for the file
 func (f *File) Attr(ctx context.Context, a *fuse.Attr) error {
-	log.Println("Requested Attr for File", f.name, "has data size", len(f.data))
+	log.Printf("%s", fmt.Sprintf("Requested Attr for File %s has data size %d", f.name, len(f.data)))
 	a.Inode = f.inode
-	a.Mode = 0777
+	a.Mode = 0444
 	a.Size = uint64(len(f.data))
+	a.Atime = time.Now()
+	a.Mtime = time.Now()
+	a.Ctime = time.Now()
 	return nil
 }
 
