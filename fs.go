@@ -5,13 +5,13 @@ import (
 	"reflect"
 
 	"bazil.org/fuse/fs"
-	"github.com/fatih/structs"
+	// "github.com/fatih/structs"
 )
 
 type FS struct {
 	inode uint64
 	root  *Dir
-	data  map[string]any
+	data  *MyData
 }
 
 type Node struct {
@@ -20,11 +20,9 @@ type Node struct {
 }
 
 // newFS creates new FS object
-func newFS(data MyData) *FS {
-	dataMap := structs.Map(data)
-
+func newFS(data *MyData) *FS {
 	return &FS{
-		data:  dataMap,
+		data:  data,
 		inode: 0,
 		root: &Dir{
 			Node: 		 Node{name: "root", inode: 1},

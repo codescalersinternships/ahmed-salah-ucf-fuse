@@ -7,6 +7,7 @@ import (
 
 	"bazil.org/fuse"
 	"bazil.org/fuse/fs"
+	"github.com/fatih/structs"
 )
 
 type MyData struct {
@@ -41,7 +42,7 @@ func main() {
 	}
 	server := fs.New(conn, nil)
 
-	data := MyData{
+	data := &MyData{
         Name: "Salah",
 		Age:  22,
 		Sub: SubStruct{
@@ -51,7 +52,8 @@ func main() {
     }
 
 	fs := newFS(data)
-	fs.reflectDataIntoFS(fs.data, fs.root)
+	dataMap := structs.Map(data)
+	fs.reflectDataIntoFS(dataMap, fs.root)
 
 	if err := server.Serve(fs); err != nil {
 		log.Fatal(err)
