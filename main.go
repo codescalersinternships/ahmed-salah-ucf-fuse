@@ -40,11 +40,17 @@ func main() {
 		usage()
 		os.Exit(2)
 	}
+
 	mountPoint := flag.Arg(0)
+	if err := os.MkdirAll(mountPoint, os.ModeDir | 0444); err != nil {
+		log.Fatal(err)
+	}
 	conn, err := fuse.Mount(mountPoint, fuse.ReadOnly())
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer fuse.Unmount(mountPoint)
+
 	server := fs.New(conn, nil)
 
 	dataMap := structs.Map(data)
