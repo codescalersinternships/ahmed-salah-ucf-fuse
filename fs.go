@@ -55,7 +55,7 @@ func (fs *FS) reflectDataIntoFS(data any, currentDir *Dir) {
 }
 
 // updateFS updates content of FUSE files from provided data
-func updateFS(data map[string]any, currentDir *Dir) {
+func updateFSData(data map[string]any, currentDir *Dir) {
 	if currentDir.files != nil {
 		for _, fileNode := range currentDir.files {
 			fileNode.data = []byte(fmt.Sprint(reflect.ValueOf(data[fileNode.name])))
@@ -64,7 +64,7 @@ func updateFS(data map[string]any, currentDir *Dir) {
 
 	if currentDir.directories != nil {
 		for _, dirNode := range currentDir.directories {
-			updateFS(data[dirNode.name].(map[string]any), dirNode)
+			updateFSData(data[dirNode.name].(map[string]any), dirNode)
 		}
 	}
 }

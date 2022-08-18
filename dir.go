@@ -64,7 +64,7 @@ func (d *Dir) Lookup(ctx context.Context, name string) (fs.Node, error) {
 // for all Files and Dirs in the provided Dir
 func (d *Dir) ReadDirAll(ctx context.Context) ([]fuse.Dirent, error) {
 	dataMap := structs.Map(data)
-	updateFS(dataMap, fileSystem.root)
+	updateFSData(dataMap, fileSystem.root)
 
 	log.Printf("%s", fmt.Sprintf("Reading all dirs of %s\n", d.name))
 	var children []fuse.Dirent
