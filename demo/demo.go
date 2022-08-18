@@ -4,10 +4,8 @@ import (
 	"flag"
 	"log"
 	"os"
-
-	"bazil.org/fuse"
-	"bazil.org/fuse/fs"
-	"github.com/fatih/structs"
+	"time"
+	"fs"
 )
 
 type MyData struct {
@@ -20,17 +18,6 @@ type SubStruct struct {
     SomeValue 	   float64
     SomeOtherValue string
 }
-
-var data = &MyData{
-	Name: "Salah",
-	Age:  22,
-	Sub: SubStruct{
-		SomeValue: 		3.14,
-		SomeOtherValue: "some text...\n",
-	},
-}
-
-var fileSystem = newFS(data)
 
 func main() {
 	flag.Usage = usage
@@ -45,19 +32,28 @@ func main() {
 	if err := os.MkdirAll(mountPoint, os.ModeDir | 0444); err != nil {
 		log.Fatal(err)
 	}
-	conn, err := fuse.Mount(mountPoint, fuse.ReadOnly())
-	if err != nil {
+
+	var data = &MyData{
+		Name: "Salah",
+		Age:  22,
+		Sub: SubStruct{
+			SomeValue: 		3.14,
+			SomeOtherValue: "some text...\n",
+		},
+	}
+
+	// Testing procedure that alters data
+	go updateAge(data)
+
+	if err := fs.Mount(mountPoint, data); err != nil {
 		log.Fatal(err)
 	}
-	defer fuse.Unmount(mountPoint)
+}
 
-	server := fs.New(conn, nil)
-
-	dataMap := structs.Map(data)
-	fileSystem.reflectDataIntoFS(dataMap, fileSystem.root)
-
-	if err := server.Serve(fileSystem); err != nil {
-		log.Fatal(err)
+func updateAge(data *MyData) {
+	ticker := time.NewTicker(2 * time.Second)
+	for range ticker.C {
+		data.Age += 1
 	}
 }
 

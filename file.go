@@ -1,26 +1,32 @@
-package main
+package fs
 
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"time"
 
 	"bazil.org/fuse"
 	"bazil.org/fuse/fuseutil"
 	"golang.org/x/net/context"
+	"github.com/fatih/structs"
 )
 
 
 type File struct {
 	Node
 	data []byte
+	filePath []string
+	appData any
 }
 
 // newFile creates a new File object
-func (fs *FS) newFile(fileName string, fileData []byte) *File {
+func (fs *FS) newFile(fileName string, fileData []byte, filePath []string) *File {
 	return &File{
 		Node: Node{ inode: fs.nextInode(), name: fileName },
 		data: fileData,
+		filePath: filePath,
+		appData: fs.appData,
 	}
 }
 
@@ -46,5 +52,26 @@ func (f *File) Read(ctx context.Context, req *fuse.ReadRequest, resp *fuse.ReadR
 // ReadAll reads all of the file
 func (f *File) ReadAll(ctx context.Context) ([]byte, error) {
 	log.Println("Reading all of file", f.name)
-	return []byte(f.data), nil
+
+	reflectedData := structs.Map(f.appData)
+
+	return f.ReadFileContent(reflectedData), nil
+}
+
+
+func (f *File) ReadFileContent(data map[string]any) []byte {
+	var content []byte
+	var traverseReflectedData func(m map[string]any, idx int)
+
+	traverseReflectedData = func (data map[string]any, idx int) {
+		if idx == len(f.filePath) {
+			content = []byte(fmt.Sprintln(reflect.ValueOf(data[f.name])))
+		} else {
+			traverseReflectedData(data[f.filePath[idx]].(map[string]any), idx+1)
+		}
+	}
+
+	traverseReflectedData(data, 0)
+
+	return content
 }

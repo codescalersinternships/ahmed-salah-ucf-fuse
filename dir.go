@@ -1,4 +1,4 @@
-package main
+package fs
 
 import (
 	"fmt"
@@ -9,7 +9,6 @@ import (
 	"bazil.org/fuse"
 	"bazil.org/fuse/fs"
 	"golang.org/x/net/context"
-	"github.com/fatih/structs"
 )
 type Dir struct {
 	Node
@@ -63,9 +62,6 @@ func (d *Dir) Lookup(ctx context.Context, name string) (fs.Node, error) {
 // ReadDirAll returns a slice of fuse.Dirent
 // for all Files and Dirs in the provided Dir
 func (d *Dir) ReadDirAll(ctx context.Context) ([]fuse.Dirent, error) {
-	reflectedData := structs.Map(data)
-	updateReflectedData(reflectedData, fileSystem.root)
-
 	log.Printf("%s", fmt.Sprintf("Reading all dirs of %s\n", d.name))
 	var children []fuse.Dirent
 	if d.files != nil {
