@@ -13,16 +13,16 @@ import (
 )
 type Dir struct {
 	Node
-	files       *[]*File
-	directories *[]*Dir
+	files       []*File
+	directories []*Dir
 }
 
 // newDir creates a new Dir object
 func (fs *FS) newDir(dirName string) *Dir {
 	return &Dir{
 		Node:		 Node{ inode: fs.nextInode(), name: dirName},
-		files: 		 &[]*File{ },
-		directories: &[]*Dir{ },
+		files: 		 []*File{ },
+		directories: []*Dir{ },
 	}
 }
 
@@ -42,7 +42,7 @@ func (d *Dir) Attr(ctx context.Context, a *fuse.Attr) error {
 func (d *Dir) Lookup(ctx context.Context, name string) (fs.Node, error) {
 	log.Printf("%s", fmt.Sprintf("Requested lookup for %s in %s\n", name, d.name))
 	if d.files != nil {
-		for _, node := range *d.files {
+		for _, node := range d.files {
 			if node.name == name {
 				log.Println("Found match for directory lookup with size", len(node.data))
 				return node, nil
@@ -50,7 +50,7 @@ func (d *Dir) Lookup(ctx context.Context, name string) (fs.Node, error) {
 		}
 	}
 	if d.directories != nil {
-		for _, node := range *d.directories {
+		for _, node := range d.directories {
 			if node.name == name {
 				log.Println("Found match for directory lookup")
 				return node, nil
@@ -69,12 +69,12 @@ func (d *Dir) ReadDirAll(ctx context.Context) ([]fuse.Dirent, error) {
 	log.Printf("%s", fmt.Sprintf("Reading all dirs of %s\n", d.name))
 	var children []fuse.Dirent
 	if d.files != nil {
-		for _, file := range *d.files {
+		for _, file := range d.files {
 			children = append(children, fuse.Dirent{Inode: file.inode, Type: fuse.DT_File, Name: file.name})
 		}
 	}
 	if d.directories != nil {
-		for _, dir := range *d.directories {
+		for _, dir := range d.directories {
 			children = append(children, fuse.Dirent{Inode: dir.inode, Type: fuse.DT_Dir, Name: dir.name})
 		}
 		log.Printf("%s", fmt.Sprintf("%d children for dir %s", len(children), d.name))

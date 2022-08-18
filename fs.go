@@ -23,8 +23,8 @@ func newFS(data any) *FS {
 		inode: 0,
 		root: &Dir{
 			Node: 		 Node{name: "root", inode: 1},
-			files: 		 &[]*File{ },
-			directories: &[]*Dir{ },
+			files: 		 []*File{ },
+			directories: []*Dir{ },
 		},
 	}
 }
@@ -45,11 +45,11 @@ func (fs *FS) reflectDataIntoFS(data any, currentDir *Dir) {
 	for key, val := range data.(map[string]any) {
 		if reflect.TypeOf(val).Kind() == reflect.Map {
 			newDir := fs.newDir(key)
-			*(currentDir.directories) = append(*(currentDir.directories), newDir)
+			currentDir.directories = append(currentDir.directories, newDir)
 			fs.reflectDataIntoFS(val, newDir)
 		} else {
 			newFile := fs.newFile(key, []byte(fmt.Sprint(reflect.ValueOf(val))))
-			*(currentDir.files) = append(*(currentDir.files), newFile)
+			currentDir.files = append(currentDir.files, newFile)
 		}
 	}
 }
@@ -57,13 +57,13 @@ func (fs *FS) reflectDataIntoFS(data any, currentDir *Dir) {
 // updateFS updates content of FUSE files from provided data
 func updateFS(data map[string]any, currentDir *Dir) {
 	if currentDir.files != nil {
-		for _, fileNode := range *currentDir.files {
+		for _, fileNode := range currentDir.files {
 			fileNode.data = []byte(fmt.Sprint(reflect.ValueOf(data[fileNode.name])))
 		}
 	}
 
 	if currentDir.directories != nil {
-		for _, dirNode := range *currentDir.directories {
+		for _, dirNode := range currentDir.directories {
 			updateFS(data[dirNode.name].(map[string]any), dirNode)
 		}
 	}
