@@ -48,7 +48,7 @@ func (fs *FS) Root() (fs.Node, error) {
 }
 
 func Mount(mountPoint string, appData any) error {
-	conn, err := fuse.Mount(mountPoint, fuse.ReadOnly())
+	conn, err := fuse.Mount(mountPoint, fuse.ReadOnly(), fuse.AllowOther())
 	defer func () error {
 		if err := conn.Close(); err != nil {
 			log.Println(err)

@@ -18,34 +18,42 @@ type File struct {
 	data []byte
 	filePath []string
 	appData any
+	attributes fuse.Attr
 }
 
 // newFile creates a new File object
-func (fs *FS) newFile(fileName string, fileData []byte, filePath []string) *File {
+func (fs *FS) newFile(fileName string, data []byte, filePath []string) *File {
 	return &File{
 		Node: Node{ inode: fs.nextInode(), name: fileName },
-		data: fileData,
+		data: data,
 		filePath: filePath,
 		appData: fs.appData,
+		attributes: fuse.Attr{
+			Inode: fs.inode,
+			Mode: 0444,
+			Size: uint64(len(data)),
+			Atime: time.Now(),
+			Mtime: time.Now(),
+			Ctime: time.Now(),
+		},
 	}
 }
 
 // Attr provides the core information for the file
 func (f *File) Attr(ctx context.Context, a *fuse.Attr) error {
-	log.Printf("%s", fmt.Sprintf("Requested Attr for File %s has data size %d", f.name, len(f.data)))
-	a.Inode = f.inode
-	a.Mode  = 0444
-	a.Size  = uint64(len(f.data))
-	a.Atime = time.Now()
-	a.Mtime = time.Now()
-	a.Ctime = time.Now()
+	log.Printf("%s", fmt.Sprintf("Requested Attr for File %s has data size %d", f.name, f.attributes.Size))
+	
+	*a = f.attributes
 	return nil
 }
 
 // Read handles requests to read data from the file
 func (f *File) Read(ctx context.Context, req *fuse.ReadRequest, resp *fuse.ReadResponse) error {
 	log.Println("Requested Read on File", f.name)
-	fuseutil.HandleRead(req, resp, f.data)
+
+	reflectedData := structs.Map(f.appData)
+	fuseutil.HandleRead(req, resp, f.ReadFileContent(reflectedData))
+
 	return nil
 }
 
@@ -55,23 +63,17 @@ func (f *File) ReadAll(ctx context.Context) ([]byte, error) {
 
 	reflectedData := structs.Map(f.appData)
 
-	return f.ReadFileContent(reflectedData), nil
+	return []byte(fmt.Sprintf("%s\n", string(f.ReadFileContent(reflectedData)))), nil
 }
 
-
+// ReadFileContent gets content of associated receiver from provided data
 func (f *File) ReadFileContent(data map[string]any) []byte {
-	var content []byte
-	var traverseReflectedData func(m map[string]any, idx int)
-
-	traverseReflectedData = func (data map[string]any, idx int) {
-		if idx == len(f.filePath) {
-			content = []byte(fmt.Sprintln(reflect.ValueOf(data[f.name])))
-		} else {
-			traverseReflectedData(data[f.filePath[idx]].(map[string]any), idx+1)
-		}
+	for _, part := range f.filePath {
+		data = data[part].(map[string]any)
 	}
 
-	traverseReflectedData(data, 0)
+	content := []byte(fmt.Sprintln(reflect.ValueOf(data[f.name])))
+	f.attributes.Size = uint64(len(content))
 
 	return content
 }

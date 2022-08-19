@@ -2,10 +2,10 @@ package main
 
 import (
 	"flag"
+	"fs"
 	"log"
 	"os"
 	"time"
-	"fs"
 )
 
 type MyData struct {
@@ -42,8 +42,9 @@ func main() {
 		},
 	}
 
-	// Testing procedure that alters data
+	// Testing procedures that alters data
 	go updateAge(data)
+	go updateName(data)
 
 	if err := fs.Mount(mountPoint, data); err != nil {
 		log.Fatal(err)
@@ -54,6 +55,13 @@ func updateAge(data *MyData) {
 	ticker := time.NewTicker(2 * time.Second)
 	for range ticker.C {
 		data.Age += 1
+	}
+}
+
+func updateName(data *MyData) {
+	ticker := time.NewTicker(2 * time.Second)
+	for range ticker.C {
+		data.Name += "#"
 	}
 }
 
