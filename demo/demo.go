@@ -1,24 +1,3 @@
-# Fuse Filesystem
-
-A simple filesystem to show the user some internal data from a running software.
-
-## Overview
-
-Fuse filesystem is a userspace file system, which lets the non-privileged users to create their own filesystem without editing the kernel code. This is done by running the actual filesystem code in the userspace while the FUSE interface works as a bridge between the userspace and the kernel.
-
-## How to use it?
-
-- Call in your program:
-
-```go
-Mount(mountPoint, appData)
-```
-
-that takes the mountPoint of the filesystem and data to be shown in this filesystem.
-
-## Demo
-
-```go
 package main
 
 import (
@@ -91,4 +70,3 @@ var usage = func() {
 	log.Printf("  %s MOUNTPOINT\n", os.Args[0])
 	flag.PrintDefaults()
 }
-```
