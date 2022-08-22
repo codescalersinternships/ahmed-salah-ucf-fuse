@@ -2,7 +2,6 @@ package fs
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"time"
 
@@ -40,17 +39,13 @@ func (fs *FS) newFile(fileName string, data []byte, filePath []string) *File {
 }
 
 // Attr provides the core information for the file
-func (f *File) Attr(ctx context.Context, a *fuse.Attr) error {
-	log.Printf("%s", fmt.Sprintf("Requested Attr for File %s has data size %d", f.name, f.attributes.Size))
-	
+func (f *File) Attr(ctx context.Context, a *fuse.Attr) error {	
 	*a = f.attributes
 	return nil
 }
 
 // Read handles requests to read data from the file
 func (f *File) Read(ctx context.Context, req *fuse.ReadRequest, resp *fuse.ReadResponse) error {
-	log.Println("Requested Read on File", f.name)
-
 	reflectedData := structs.Map(f.appData)
 	fuseutil.HandleRead(req, resp, f.ReadFileContent(reflectedData))
 
@@ -59,8 +54,6 @@ func (f *File) Read(ctx context.Context, req *fuse.ReadRequest, resp *fuse.ReadR
 
 // ReadAll reads all of the file
 func (f *File) ReadAll(ctx context.Context) ([]byte, error) {
-	log.Println("Reading all of file", f.name)
-
 	reflectedData := structs.Map(f.appData)
 
 	return []byte(fmt.Sprintf("%s\n", string(f.ReadFileContent(reflectedData)))), nil
